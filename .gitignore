@@ -16,7 +16,7 @@ buildNumber.properties
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 /.metadata/
-/Zettel/src/main/resources/preview_format
+# /Zettel/src/main/resources/preview_format
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/git,java,maven,eclipse,windows
