@@ -1,4 +1,4 @@
-package com.zettel.gui;
+package com.zettel.controller;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -43,16 +43,9 @@ public class TabController {
 	private Note note;
 	
 	public void addActionListeners() {
-		textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-			setContent(newValue);
-			
-            note.edit(newValue);
-	        
-
-		});
-
 		webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
 			if (newState == State.SUCCEEDED) {
+	            splitPane.setVisible(true);
 				webEngine.executeScript("window.scrollTo(0, " + lastScrollPos + ");");
 				// Add a click listener to every anchor tag
 				org.w3c.dom.Document doc = webView.getEngine().getDocument();
@@ -74,11 +67,36 @@ public class TabController {
 				}
 			}
 		});
+		
+		textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+			if (oldValue.equals(newValue) || newValue.equals(note.textContent)) return;
+			setContent(newValue);
+            note.edit(newValue);
+		});
+		
+		splitPane.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+				double[] positions = splitPane.getDividerPositions();
+				if (positions.length > 0) {
+					lastDividerPosition = positions[0];
+				}
+
+				Platform.runLater(() -> splitPane.setDividerPositions(lastDividerPosition));
+			
+		});
+	}
+	
+	public void initializeView(String text) {
+		this.textArea.setText(text);
+		this.setContent(text);
 	}
 	
 	public void setTitle(String title) {
 	    this.title = title;
-	    note = NoteManager.availableNotes.get(title);
+//	    note = NoteManager.availableNotes.get(title);
+	}
+	
+	public void setNote(Note note) {
+		this.note = note;
 	}
 
 	public String getTitle() {
@@ -87,22 +105,13 @@ public class TabController {
 	@FXML
 	public void initialize() {
 		webEngine = webView.getEngine();
-		splitPane.widthProperty().addListener((obs, oldWidth, newWidth) -> adjustDivider());
-		
-	}
-
-	private void adjustDivider() {
-		double[] positions = splitPane.getDividerPositions();
-		if (positions.length > 0) {
-			lastDividerPosition = positions[0];
-		}
-
-		Platform.runLater(() -> splitPane.setDividerPositions(lastDividerPosition));
+	    splitPane.setVisible(false);
+		addActionListeners();
 	}
 
 	public String generateHtml(String markdown) {
 		MutableDataSet options = new MutableDataSet();
-		URL base = getClass().getResource("/preview_format");
+		URL base = getClass().getResource("/style");
 
 		options.set(Parser.EXTENSIONS, Arrays.asList(AutolinkExtension.create(), EmojiExtension.create(),
 				StrikethroughExtension.create(), TaskListExtension.create(), TablesExtension.create()
@@ -127,8 +136,8 @@ public class TabController {
 				    <meta charset="UTF-8">
 				    <meta name="viewport" content="width=device-width, initial-scale=1">
 				    <link rel="stylesheet" href="%s/preview.css">
-				    <link rel="stylesheet" href="%s/styles/default.css">
-				    <script src="%s/highlight.min.js"></script>
+				    <link rel="stylesheet" href="%s/highlight_js/styles/default.css">
+				    <script src="%s/highlight_js/highlight.min.js"></script>
 				    <script>hljs.highlightAll();</script>
 				    <style>
 				        .markdown-body {
@@ -160,8 +169,4 @@ public class TabController {
 		webEngine.loadContent(html);
 	}
 
-//	public void setContent(String title) {
-//		textArea.setText("Content of " + title);
-//		webEngine.loadContent("<h1>" + title + "</h1><p>This is a note</p>");
-//	}
 }

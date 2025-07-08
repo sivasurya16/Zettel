@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.web.WebView?>
 
-<StackPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zettel.gui.TabController">
+<StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zettel.controller.TabController">
    <children>
       <SplitPane fx:id="splitPane" dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="600.0">
         <items>
-            <TextArea fx:id="textArea" prefHeight="200.0" prefWidth="200.0" stylesheets="@preview_format/text_area.css" />
+            <TextArea fx:id="textArea" prefHeight="200.0" prefWidth="200.0" stylesheets="@../style/text_area.css" />
             <WebView fx:id="webView" prefHeight="398.0" prefWidth="298.0" />
         </items>
       </SplitPane>

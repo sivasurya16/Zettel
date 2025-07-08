@@ -81,7 +81,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>${javafx.maven.plugin.version}</version>
                 <configuration>
-                    <mainClass>com.zettel.gui.Main</mainClass>
+                    <mainClass>com.zettel.Main</mainClass>
                 </configuration>
                 <executions>
                     <execution>

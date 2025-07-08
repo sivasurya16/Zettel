@@ -10,6 +10,7 @@ public class Note {
 	public String title;
 	public String textContent;
 	private URI location;
+	private boolean updated;
 	
 	public Note(String title,String textContent,URI location) {
 		this.title = title;
@@ -18,11 +19,14 @@ public class Note {
 	}
 	public void edit(String textContent) {
 		this.textContent = textContent;
-		System.out.println(textContent);
+		this.updated = true;
+		System.out.println("Edited");
+//		System.out.println(textContent);
 	}
 	
 	
 	public void save() {
+		if (!updated) return;
 		File f = new File(location);
 		FileWriter fw;
 		try {
@@ -30,6 +34,7 @@ public class Note {
 			fw.write(textContent);
 			fw.flush();
 			fw.close();
+			System.out.println("Written");
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -37,6 +42,9 @@ public class Note {
 		}
 	}
 
+	public String getLocation() {
+		return location.toString();
+	}
 	@Override
 	public int hashCode() {
 		return Objects.hash(title);
