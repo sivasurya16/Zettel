@@ -24,8 +24,9 @@ public class Event {
 
 	public boolean remind() {
 		LocalDateTime curTime = LocalDateTime.now();
-		if (reminded)
+		if (reminded) {
 			return false;
+		}
 		if (eventTime.compareTo(curTime) <= 0) {
 			System.out.println("Time to do this event : " + this.toString());
 			reminded = true;

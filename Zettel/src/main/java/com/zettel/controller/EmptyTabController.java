@@ -2,14 +2,14 @@ package com.zettel.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import com.zettel.notemanager.NoteManager;
 
-import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 
 public class EmptyTabController {
 
@@ -23,12 +23,20 @@ public class EmptyTabController {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Create New Note");
 		fileChooser.setInitialDirectory(new File(NoteManager.BASEURI));
+		ExtensionFilter extFilter = new ExtensionFilter("Markdown Files (*.md)", "*.md");
+		fileChooser.getExtensionFilters().add(extFilter);
 		File newFile = fileChooser.showSaveDialog(null);
 		if (newFile == null) {
-			Alert alert = new Alert(Alert.AlertType.INFORMATION,"No File Created");
+			Alert alert = new Alert(Alert.AlertType.INFORMATION, "No File Created");
 			alert.showAndWait();
 			return;
 		}
+		if (!isInsideBaseDirectory(newFile)) {
+			Alert alert = new Alert(Alert.AlertType.WARNING, "Create file within base directory");
+			alert.show();
+			return;
+		}
+
 		boolean fileCreated = false;
 		try {
 			fileCreated = newFile.createNewFile();
@@ -36,11 +44,23 @@ public class EmptyTabController {
 			e.printStackTrace();
 		}
 		if (!fileCreated) {
-			Alert alert = new Alert(Alert.AlertType.WARNING,"File Already Exist");
+			Alert alert = new Alert(Alert.AlertType.WARNING, "File Already Exist");
 			alert.show();
 			return;
 		}
 		mainController.refreshTreeView();
+	}
+
+	public boolean isInsideBaseDirectory(File file) {
+		File baseDir = new File(NoteManager.BASEURI);
+		try {
+			Path basePath = baseDir.getCanonicalFile().toPath();
+			Path filePath = file.getCanonicalFile().toPath();
+			return filePath.startsWith(basePath);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public void onChangeBaseDirectoryClicked() {
@@ -52,8 +72,8 @@ public class EmptyTabController {
 			NoteManager.changeBaseDirectory(newBaseURL);
 			mainController.refreshTreeView();
 		} else {
-	        Alert alert = new Alert(Alert.AlertType.ERROR, "Choose a valid Directory");
-	        alert.showAndWait();
+			Alert alert = new Alert(Alert.AlertType.ERROR, "Choose a valid Directory");
+			alert.showAndWait();
 		}
 	}
 }

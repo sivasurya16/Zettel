@@ -3,15 +3,13 @@ package com.zettel.controller;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import com.zettel.notemanager.Note;
 import com.zettel.notemanager.NoteManager;
@@ -21,14 +19,11 @@ import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -39,7 +34,7 @@ public class MainController {
 	private TreeView<File> treeView;
 	@FXML
 	private TabPane tabPane;
-	private Set<String> opened;
+	private Map<String, Tab> opened;
 
 	private NoteManager noteManager;
 	private volatile boolean running;
@@ -48,7 +43,7 @@ public class MainController {
 	@FXML
 	public void initialize() {
 		noteManager = new NoteManager();
-		opened = new TreeSet<>();
+		opened = new HashMap<>();
 		setupTreeView();
 		setupTabPane();
 		startWatcher();
@@ -81,13 +76,13 @@ public class MainController {
 		});
 
 	}
-	
+
 	private String fileNameWithoutExtension(String fileName) {
 		int index = fileName.lastIndexOf('.');
 		if (index == -1) {
 			index = fileName.length();
 		}
-		return fileName.substring(0,index);
+		return fileName.substring(0, index);
 	}
 
 	private void setupTreeView() {
@@ -114,10 +109,17 @@ public class MainController {
 		treeView.setRoot(rootItem);
 
 		treeView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-			if (newVal != null && newVal != rootItem && !opened.contains(newVal.getValue().toURI().toString())) {
-				openNewTab(newVal.getValue());
-				opened.add(newVal.getValue().toURI().toString());
+			if (newVal != null && newVal != rootItem && !opened.containsKey(newVal.getValue().toURI().toString())) {
+				Tab newTab = openNewTab(newVal.getValue());
+				opened.put(newVal.getValue().toURI().toString(), newTab);
 
+			} else {
+				if (newVal != null) {
+					Tab newTab = opened.getOrDefault(newVal.getValue().toURI().toString(), null);
+					if (newTab != null) {
+						tabPane.getSelectionModel().select(newTab);
+					}
+				}
 			}
 			PauseTransition pause = new PauseTransition(Duration.millis(250));
 			pause.setOnFinished(e -> treeView.getSelectionModel().clearSelection());
@@ -130,7 +132,7 @@ public class MainController {
 		treeView.setRoot(NoteManager.rootNode);
 	}
 
-	private void openNewTab(File file) {
+	private Tab openNewTab(File file) {
 		String title = fileNameWithoutExtension(file.getName());
 
 		try {
@@ -161,9 +163,11 @@ public class MainController {
 			tabPane.getTabs().add(newTab);
 			tabPane.getSelectionModel().select(newTab);
 
+			return newTab;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
 	public void startWatcher() {
@@ -176,11 +180,11 @@ public class MainController {
 					watchService = FileSystems.getDefault().newWatchService();
 					basePath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
 							StandardWatchEventKinds.ENTRY_DELETE);
-					
+
 					while (running) {
 						WatchKey watchKey = watchService.take();
 						watchKey.pollEvents();
-						Platform.runLater(()->refreshTreeView());
+						Platform.runLater(() -> refreshTreeView());
 						watchKey.reset();
 					}
 				} catch (IOException | InterruptedException e) {
@@ -190,10 +194,10 @@ public class MainController {
 				}
 			}
 		};
-		
+
 		th.start();
 	}
-	
+
 	public void stopWatcher() {
 		this.running = false;
 		try {
@@ -203,7 +207,7 @@ public class MainController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 }

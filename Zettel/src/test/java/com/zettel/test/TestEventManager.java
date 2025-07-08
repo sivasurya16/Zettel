@@ -1,6 +1,7 @@
 package com.zettel.test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Month;
 
@@ -19,7 +20,7 @@ class TestEventManager {
 		manager.addEvent("SEP class", 2025, Month.MARCH, 4, 9, 45);
 		manager.addEvent("Event to delete", 2027, Month.MARCH, 4, 0, 0);
 	}
-	
+
 	@Test
 	void testDelete() {
 		assertTrue(manager.removeEvent("Event to delete"));
